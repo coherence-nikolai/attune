@@ -1,0 +1,25 @@
+{
+  "expo": {
+    "name": "Attune",
+    "slug": "attune",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "dark",
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "app.coherencenikolai.attune"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "backgroundColor": "#090B10"
+      },
+      "package": "app.coherencenikolai.attune"
+    },
+    "web": {
+      "bundler": "metro"
+    }
+  }
+}
