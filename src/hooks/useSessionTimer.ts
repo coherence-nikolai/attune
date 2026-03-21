@@ -1,73 +1,16 @@
-import { AppState, AppStateStatus } from 'react-native';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
-import { SessionStatus } from '../types';
+export function useSessionTimer(totalSeconds: number) {
+  const [remainingSeconds, setRemainingSeconds] = useState(totalSeconds);
+  const [status, setStatus] = useState<'idle' | 'running' | 'paused' | 'completed'>('idle');
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-type UseSessionTimerOptions = {
-  durationSeconds: number;
-  onComplete: () => void;
-};
-
-export function useSessionTimer({ durationSeconds, onComplete }: UseSessionTimerOptions) {
-  const [remainingSeconds, setRemainingSeconds] = useState(durationSeconds);
-  const [status, setStatus] = useState<SessionStatus>('running');
-
-  const targetEndRef = useRef<number | null>(Date.now() + durationSeconds * 1000);
-  const remainingRef = useRef(durationSeconds);
-  const completedRef = useRef(false);
-  const statusRef = useRef<SessionStatus>('running');
-
-  const syncRemainingFromClock = useCallback(() => {
-    if (!targetEndRef.current) {
-      return remainingRef.current;
-    }
-
-    const next = Math.max(0, Math.ceil((targetEndRef.current - Date.now()) / 1000));
-    remainingRef.current = next;
-    setRemainingSeconds(next);
-    return next;
-  }, []);
-
-  const complete = useCallback(() => {
-    if (completedRef.current) {
-      return;
-    }
-
-    completedRef.current = true;
-    targetEndRef.current = null;
-    remainingRef.current = 0;
-    setRemainingSeconds(0);
-    setStatus('completed');
-    statusRef.current = 'completed';
-    onComplete();
-  }, [onComplete]);
-
-  const pause = useCallback(() => {
-    if (statusRef.current !== 'running') {
-      return;
-    }
-
-    syncRemainingFromClock();
-    targetEndRef.current = null;
-    setStatus('paused');
-    statusRef.current = 'paused';
-  }, [syncRemainingFromClock]);
-
-  const resume = useCallback(() => {
-    if (statusRef.current !== 'paused') {
-      return;
-    }
-
-    completedRef.current = false;
-    targetEndRef.current = Date.now() + remainingRef.current * 1000;
-    setStatus('running');
-    statusRef.current = 'running';
-  }, []);
-
-  const exit = useCallback(() => {
-    targetEndRef.current = null;
-    setStatus('exited');
-    statusRef.current = 'exited';
+  useEffect(() => {
+    return () => {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+      }
+    };
   }, []);
 
   useEffect(() => {
@@ -75,31 +18,58 @@ export function useSessionTimer({ durationSeconds, onComplete }: UseSessionTimer
       return;
     }
 
-    const interval = setInterval(() => {
-      const next = syncRemainingFromClock();
-      if (next <= 0) {
-        complete();
+    intervalRef.current = setInterval(() => {
+      setRemainingSeconds((current) => {
+        if (current <= 1) {
+          if (intervalRef.current) {
+            clearInterval(intervalRef.current);
+          }
+          setStatus('completed');
+          return 0;
+        }
+        return current - 1;
+      });
+    }, 1000);
+
+    return () => {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
       }
-    }, 250);
+    };
+  }, [status]);
 
-    return () => clearInterval(interval);
-  }, [complete, status, syncRemainingFromClock]);
+  const start = () => {
+    setRemainingSeconds(totalSeconds);
+    setStatus('running');
+  };
 
-  useEffect(() => {
-    const subscription = AppState.addEventListener('change', (nextState: AppStateStatus) => {
-      if (nextState !== 'active' && statusRef.current === 'running') {
-        pause();
-      }
-    });
+  const pause = () => {
+    if (intervalRef.current) {
+      clearInterval(intervalRef.current);
+    }
+    setStatus('paused');
+  };
 
-    return () => subscription.remove();
-  }, [pause]);
+  const resume = () => {
+    if (remainingSeconds > 0) {
+      setStatus('running');
+    }
+  };
+
+  const reset = () => {
+    if (intervalRef.current) {
+      clearInterval(intervalRef.current);
+    }
+    setRemainingSeconds(totalSeconds);
+    setStatus('idle');
+  };
 
   return {
     remainingSeconds,
     status,
+    start,
     pause,
     resume,
-    exit,
+    reset,
   };
 }
