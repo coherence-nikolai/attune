@@ -12,35 +12,31 @@ export const ATTUNE_STATES: AttuneState[] = [
 
 export const SESSION_DURATION_SECONDS = 180;
 
-export const MODE_CONFIG: Record<
-  AttuneMode,
-  {
-    cue: string;
-    description: string;
-    inhaleMs: number;
-    exhaleMs: number;
-    settleMs: number;
-  }
-> = {
+export const BREATH_PHASES = {
+  inhaleSeconds: 4,
+  exhaleSeconds: 6,
+  settleSeconds: 1,
+} as const;
+
+export const MODE_ORDER: AttuneMode[] = ['Steady', 'Soften', 'Clear'];
+
+export const MODE_CONFIG: Record<AttuneMode, { cue: string; description: string; sessionPrompt: string; completionLine: string }> = {
   Steady: {
-    cue: 'Grounding / settling',
-    description: 'Return to a quieter center.',
-    inhaleMs: 4000,
-    exhaleMs: 4000,
-    settleMs: 1000,
+    cue: 'Stabilize the signal',
+    description: 'Settle into steadiness.',
+    sessionPrompt: 'Steady the signal',
+    completionLine: 'Hold what has steadied.',
   },
   Soften: {
-    cue: 'Gentle easing',
-    description: 'Loosen the pace. Let the edges soften.',
-    inhaleMs: 3500,
-    exhaleMs: 5000,
-    settleMs: 1200,
+    cue: 'Ease contraction gently',
+    description: 'Reduce contraction without force.',
+    sessionPrompt: 'Soften the edges',
+    completionLine: 'Let the signal stay soft.',
   },
   Clear: {
-    cue: 'Composure / decluttering',
-    description: 'Make a little more space in the field.',
-    inhaleMs: 3000,
-    exhaleMs: 4500,
-    settleMs: 800,
+    cue: 'Reduce inner noise',
+    description: 'Return to clarity and space.',
+    sessionPrompt: 'Clear the inner field',
+    completionLine: 'Notice what has cleared.',
   },
 };
