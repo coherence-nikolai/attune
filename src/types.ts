@@ -9,7 +9,7 @@ export type AttuneState =
 
 export type AttuneMode = 'Steady' | 'Soften' | 'Clear';
 
-export type SessionStatus = 'idle' | 'running' | 'paused' | 'completed' | 'exited';
+export type Flow = 'home' | 'checkin' | 'mode' | 'session' | 'reflection' | 'history';
 
 export type AttuneSessionRecord = {
   id: string;
