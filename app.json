@@ -2,24 +2,17 @@
   "expo": {
     "name": "Attune",
     "slug": "attune",
-    "version": "0.1.0",
+    "version": "0.2.0",
     "orientation": "portrait",
     "userInterfaceStyle": "dark",
-    "assetBundlePatterns": [
-      "**/*"
-    ],
+    "assetBundlePatterns": ["**/*"],
     "ios": {
-      "supportsTablet": true,
-      "bundleIdentifier": "app.coherencenikolai.attune"
+      "supportsTablet": true
     },
     "android": {
       "adaptiveIcon": {
-        "backgroundColor": "#090B10"
-      },
-      "package": "app.coherencenikolai.attune"
-    },
-    "web": {
-      "bundler": "metro"
+        "backgroundColor": "#070b11"
+      }
     }
   }
 }

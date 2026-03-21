@@ -1,13 +1,6 @@
 import { StatusBar } from 'expo-status-bar';
 import React, { useEffect, useMemo, useState } from 'react';
-import {
-  ActivityIndicator,
-  FlatList,
-  StyleSheet,
-  Text,
-  TextInput,
-  View,
-} from 'react-native';
+import { ActivityIndicator, FlatList, StyleSheet, Text, TextInput, View } from 'react-native';
 
 import { HistoryCard } from './src/components/HistoryCard';
 import { ModeCard } from './src/components/ModeCard';
@@ -19,9 +12,7 @@ import { StateChip } from './src/components/StateChip';
 import { ATTUNE_STATES, MODE_CONFIG, SESSION_DURATION_SECONDS } from './src/constants/attune';
 import { appendHistory, loadHistory } from './src/lib/storage';
 import { theme } from './src/theme';
-import { AttuneMode, AttuneSessionRecord, AttuneState } from './src/types';
-
-type Flow = 'home' | 'checkin' | 'mode' | 'session' | 'reflection' | 'history';
+import { AttuneMode, AttuneSessionRecord, AttuneState, Flow } from './src/types';
 
 const MODE_ORDER: AttuneMode[] = ['Steady', 'Soften', 'Clear'];
 
@@ -55,13 +46,13 @@ export default function App() {
     };
   }, []);
 
-  const sessionSummary = useMemo(() => {
-    if (!beforeState || !selectedMode) {
-      return null;
+  const currentSignalLine = useMemo(() => {
+    if (!beforeState) {
+      return 'Choose the state that feels closest.';
     }
 
-    return `${beforeState} → ${selectedMode}`;
-  }, [beforeState, selectedMode]);
+    return `${beforeState} is closest right now.`;
+  }, [beforeState]);
 
   const resetDraft = () => {
     setBeforeState(null);
@@ -121,15 +112,17 @@ export default function App() {
       {flow === 'home' ? (
         <Screen>
           <View style={styles.heroWrap}>
-            <Text style={styles.heroEyebrow}>Attune</Text>
-            <Text style={styles.heroTitle}>A quiet solo coherence practice.</Text>
-            <Text style={styles.heroText}>Check in. Breathe. Reflect.</Text>
+            <Text style={styles.heroEyebrow}>ATTUNE</Text>
+            <Text style={styles.heroTitle}>A quiet instrument{`\n`}for coherence.</Text>
+            <Text style={styles.heroText}>Notice the signal. Steady the breath. Return with more clarity.</Text>
           </View>
 
           <View style={styles.panel}>
-            <Text style={styles.sectionTitle}>Phase 1</Text>
-            <Text style={styles.bodyText}>A short guided session to move from fragmentation toward steadier presence.</Text>
+            <Text style={styles.sectionTitle}>Phase 1 · Self coherence</Text>
+            <Text style={styles.bodyText}>A private practice for stabilizing your own signal before it reaches outward.</Text>
           </View>
+
+          <View style={styles.spacer} />
 
           <View style={styles.buttonStack}>
             <PrimaryButton label="Begin" onPress={beginAttune} />
@@ -141,19 +134,14 @@ export default function App() {
       {flow === 'checkin' ? (
         <Screen>
           <View style={styles.headerBlock}>
-            <Text style={styles.heroEyebrow}>Check in</Text>
-            <Text style={styles.heroTitle}>What feels closest now?</Text>
-            <Text style={styles.heroText}>Choose one current state.</Text>
+            <Text style={styles.heroEyebrow}>SIGNAL</Text>
+            <Text style={styles.heroTitle}>Where is the{`\n`}signal now?</Text>
+            <Text style={styles.heroText}>{currentSignalLine}</Text>
           </View>
 
           <View style={styles.chipGrid}>
             {ATTUNE_STATES.map((state) => (
-              <StateChip
-                key={state}
-                label={state}
-                selected={beforeState === state}
-                onPress={() => setBeforeState(state)}
-              />
+              <StateChip key={state} label={state} selected={beforeState === state} onPress={() => setBeforeState(state)} />
             ))}
           </View>
 
@@ -167,9 +155,9 @@ export default function App() {
       {flow === 'mode' ? (
         <Screen>
           <View style={styles.headerBlock}>
-            <Text style={styles.heroEyebrow}>Mode</Text>
-            <Text style={styles.heroTitle}>Choose the tone.</Text>
-            <Text style={styles.heroText}>{sessionSummary ?? 'Select a mode for this session.'}</Text>
+            <Text style={styles.heroEyebrow}>MODE</Text>
+            <Text style={styles.heroTitle}>Choose the next{`\n`}movement.</Text>
+            <Text style={styles.heroText}>Select the kind of return you need.</Text>
           </View>
 
           <View style={styles.cardStack}>
@@ -192,9 +180,7 @@ export default function App() {
             <PrimaryButton
               label="Start session"
               onPress={() => {
-                if (!selectedMode) {
-                  return;
-                }
+                if (!selectedMode) return;
                 setStartedAt(new Date().toISOString());
                 setFlow('session');
               }}
@@ -206,30 +192,20 @@ export default function App() {
       ) : null}
 
       {flow === 'session' && selectedMode ? (
-        <SessionView
-          mode={selectedMode}
-          durationSeconds={SESSION_DURATION_SECONDS}
-          onExit={exitToHome}
-          onContinue={() => setFlow('reflection')}
-        />
+        <SessionView mode={selectedMode} durationSeconds={SESSION_DURATION_SECONDS} onExit={exitToHome} onContinue={() => setFlow('reflection')} />
       ) : null}
 
       {flow === 'reflection' ? (
         <Screen>
           <View style={styles.headerBlock}>
-            <Text style={styles.heroEyebrow}>Reflect</Text>
-            <Text style={styles.heroTitle}>How do you feel now?</Text>
-            <Text style={styles.heroText}>Choose one state. A short note is optional.</Text>
+            <Text style={styles.heroEyebrow}>REFLECT</Text>
+            <Text style={styles.heroTitle}>Where has the{`\n`}signal settled?</Text>
+            <Text style={styles.heroText}>Choose the state that feels closest now.</Text>
           </View>
 
           <View style={styles.chipGrid}>
             {ATTUNE_STATES.map((state) => (
-              <StateChip
-                key={state}
-                label={state}
-                selected={afterState === state}
-                onPress={() => setAfterState(state)}
-              />
+              <StateChip key={state} label={state} selected={afterState === state} onPress={() => setAfterState(state)} />
             ))}
           </View>
 
@@ -238,7 +214,7 @@ export default function App() {
             <TextInput
               value={note}
               onChangeText={setNote}
-              placeholder="A brief reflection"
+              placeholder="What shifted?"
               placeholderTextColor={theme.colors.textSoft}
               maxLength={160}
               multiline
@@ -247,7 +223,7 @@ export default function App() {
           </View>
 
           <View style={styles.buttonStack}>
-            <PrimaryButton label={saving ? 'Saving…' : 'Save session'} onPress={saveReflection} disabled={!afterState || saving} />
+            <PrimaryButton label={saving ? 'Saving…' : 'Save return'} onPress={saveReflection} disabled={!afterState || saving} />
             <SecondaryButton label="Return" onPress={exitToHome} />
           </View>
         </Screen>
@@ -256,9 +232,9 @@ export default function App() {
       {flow === 'history' ? (
         <Screen scroll={false}>
           <View style={styles.headerBlock}>
-            <Text style={styles.heroEyebrow}>History</Text>
-            <Text style={styles.heroTitle}>Local sessions</Text>
-            <Text style={styles.heroText}>Stored on this device only.</Text>
+            <Text style={styles.heroEyebrow}>HISTORY</Text>
+            <Text style={styles.heroTitle}>A quiet record{`\n`}of return.</Text>
+            <Text style={styles.heroText}>Each entry marks a movement toward steadiness, softness, or clarity.</Text>
           </View>
 
           {historyLoading ? (
@@ -267,15 +243,15 @@ export default function App() {
             </View>
           ) : history.length === 0 ? (
             <View style={[styles.panel, styles.emptyPanel]}>
-              <Text style={styles.sectionTitle}>No sessions yet</Text>
-              <Text style={styles.bodyText}>Complete one short Attune session to begin a private history.</Text>
+              <Text style={styles.sectionTitle}>No returns saved yet.</Text>
+              <Text style={styles.bodyText}>Begin a session when you want to steady the signal.</Text>
             </View>
           ) : (
             <FlatList
               data={history}
               keyExtractor={(item) => item.id}
               contentContainerStyle={styles.historyList}
-              renderItem={({ item }) => <HistoryCard record={item} />}
+              renderItem={({ item }) => <HistoryCard item={item} />}
               showsVerticalScrollIndicator={false}
             />
           )}
@@ -299,29 +275,34 @@ const styles = StyleSheet.create({
     color: theme.colors.success,
     fontSize: theme.typography.small,
     fontWeight: '700',
-    letterSpacing: 0.3,
+    letterSpacing: 1.9,
   },
   heroTitle: {
     color: theme.colors.text,
-    fontSize: theme.typography.title,
-    lineHeight: 40,
+    fontSize: theme.typography.hero,
+    lineHeight: 64,
     fontWeight: '700',
   },
   heroText: {
     color: theme.colors.textMuted,
     fontSize: theme.typography.body,
-    lineHeight: 24,
+    lineHeight: 28,
+    maxWidth: 336,
   },
   headerBlock: {
     gap: theme.spacing.sm,
   },
   panel: {
-    borderRadius: theme.radius.lg,
+    borderRadius: theme.radius.xl,
     borderWidth: 1,
-    borderColor: theme.colors.border,
-    backgroundColor: theme.colors.surface,
+    borderColor: theme.colors.borderSoft,
+    backgroundColor: theme.colors.surfaceGlass,
     padding: theme.spacing.lg,
     gap: theme.spacing.sm,
+    shadowColor: theme.colors.shadow,
+    shadowOpacity: 0.22,
+    shadowRadius: 24,
+    shadowOffset: { width: 0, height: 10 },
   },
   emptyPanel: {
     minHeight: 180,
@@ -335,7 +316,7 @@ const styles = StyleSheet.create({
   bodyText: {
     color: theme.colors.textMuted,
     fontSize: theme.typography.body,
-    lineHeight: 24,
+    lineHeight: 28,
   },
   chipGrid: {
     flexDirection: 'row',
@@ -347,6 +328,10 @@ const styles = StyleSheet.create({
   },
   buttonStack: {
     gap: theme.spacing.sm,
+  },
+  spacer: {
+    flex: 1,
+    minHeight: 120,
   },
   fieldLabel: {
     color: theme.colors.text,
@@ -364,7 +349,7 @@ const styles = StyleSheet.create({
     paddingVertical: theme.spacing.md,
     textAlignVertical: 'top',
     fontSize: theme.typography.body,
-    lineHeight: 22,
+    lineHeight: 24,
   },
   historyList: {
     gap: theme.spacing.sm,
