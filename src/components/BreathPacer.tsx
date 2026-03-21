@@ -10,103 +10,140 @@ type BreathPacerProps = {
 
 export function BreathPacer({ running }: BreathPacerProps) {
   const haloScale = useRef(new Animated.Value(0.96)).current;
-  const ringScale = useRef(new Animated.Value(0.92)).current;
-  const orbScale = useRef(new Animated.Value(0.97)).current;
-  const coreScale = useRef(new Animated.Value(0.92)).current;
-  const glowOpacity = useRef(new Animated.Value(0.18)).current;
+  const ringScale = useRef(new Animated.Value(0.98)).current;
+  const coreScale = useRef(new Animated.Value(0.96)).current;
+  const haloOpacity = useRef(new Animated.Value(0.18)).current;
+  const ringOpacity = useRef(new Animated.Value(0.56)).current;
   const captionOpacity = useRef(new Animated.Value(0.72)).current;
 
   useEffect(() => {
+    const animatedValues = [haloScale, ringScale, coreScale, haloOpacity, ringOpacity, captionOpacity];
+
     if (!running) {
-      haloScale.stopAnimation();
-      ringScale.stopAnimation();
-      orbScale.stopAnimation();
-      coreScale.stopAnimation();
-      glowOpacity.stopAnimation();
-      captionOpacity.stopAnimation();
+      animatedValues.forEach((value) => value.stopAnimation());
       return;
     }
 
-    const inhaleMs = BREATH_PHASES.inhaleSeconds * 1000;
-    const exhaleMs = BREATH_PHASES.exhaleSeconds * 1000;
-    const settleMs = BREATH_PHASES.settleSeconds * 1000;
+    const inhaleDuration = BREATH_PHASES.inhaleSeconds * 1000;
+    const exhaleDuration = BREATH_PHASES.exhaleSeconds * 1000;
+    const settleDuration = BREATH_PHASES.settleSeconds * 1000;
+
+    const inhaleEase = Easing.bezier(0.25, 0.02, 0.24, 1);
+    const exhaleEase = Easing.bezier(0.28, 0.0, 0.18, 1);
 
     const cycle = Animated.loop(
       Animated.sequence([
         Animated.parallel([
           Animated.timing(haloScale, {
             toValue: 1.1,
-            duration: inhaleMs,
-            easing: Easing.inOut(Easing.ease),
+            duration: inhaleDuration,
+            easing: inhaleEase,
             useNativeDriver: true,
           }),
           Animated.timing(ringScale, {
-            toValue: 1.04,
-            duration: inhaleMs,
-            easing: Easing.inOut(Easing.ease),
-            useNativeDriver: true,
-          }),
-          Animated.timing(orbScale, {
-            toValue: 1.08,
-            duration: inhaleMs,
-            easing: Easing.inOut(Easing.ease),
+            toValue: 1.045,
+            duration: inhaleDuration,
+            easing: inhaleEase,
             useNativeDriver: true,
           }),
           Animated.timing(coreScale, {
-            toValue: 1.15,
-            duration: inhaleMs,
-            easing: Easing.inOut(Easing.ease),
+            toValue: 1.12,
+            duration: inhaleDuration,
+            easing: inhaleEase,
             useNativeDriver: true,
           }),
-          Animated.timing(glowOpacity, {
-            toValue: 0.34,
-            duration: inhaleMs,
-            easing: Easing.inOut(Easing.ease),
+          Animated.timing(haloOpacity, {
+            toValue: 0.28,
+            duration: inhaleDuration,
+            easing: inhaleEase,
+            useNativeDriver: false,
+          }),
+          Animated.timing(ringOpacity, {
+            toValue: 0.78,
+            duration: inhaleDuration,
+            easing: inhaleEase,
             useNativeDriver: false,
           }),
           Animated.timing(captionOpacity, {
-            toValue: 0.94,
-            duration: inhaleMs,
-            easing: Easing.inOut(Easing.ease),
+            toValue: 0.9,
+            duration: inhaleDuration,
+            easing: inhaleEase,
             useNativeDriver: false,
           }),
         ]),
-        Animated.delay(settleMs),
         Animated.parallel([
           Animated.timing(haloScale, {
-            toValue: 0.96,
-            duration: exhaleMs,
-            easing: Easing.inOut(Easing.ease),
+            toValue: 1.12,
+            duration: settleDuration,
+            easing: Easing.out(Easing.quad),
             useNativeDriver: true,
           }),
           Animated.timing(ringScale, {
-            toValue: 0.92,
-            duration: exhaleMs,
-            easing: Easing.inOut(Easing.ease),
-            useNativeDriver: true,
-          }),
-          Animated.timing(orbScale, {
-            toValue: 0.97,
-            duration: exhaleMs,
-            easing: Easing.inOut(Easing.ease),
+            toValue: 1.06,
+            duration: settleDuration,
+            easing: Easing.out(Easing.quad),
             useNativeDriver: true,
           }),
           Animated.timing(coreScale, {
-            toValue: 0.92,
-            duration: exhaleMs,
-            easing: Easing.inOut(Easing.ease),
+            toValue: 1.1,
+            duration: settleDuration,
+            easing: Easing.out(Easing.quad),
             useNativeDriver: true,
           }),
-          Animated.timing(glowOpacity, {
-            toValue: 0.14,
-            duration: exhaleMs,
-            easing: Easing.inOut(Easing.ease),
+          Animated.timing(haloOpacity, {
+            toValue: 0.2,
+            duration: settleDuration,
+            easing: Easing.out(Easing.quad),
+            useNativeDriver: false,
+          }),
+          Animated.timing(ringOpacity, {
+            toValue: 0.66,
+            duration: settleDuration,
+            easing: Easing.out(Easing.quad),
             useNativeDriver: false,
           }),
           Animated.timing(captionOpacity, {
-            toValue: 0.68,
-            duration: exhaleMs,
-            easing: Easing.inOut(Easing.ease),
+            toValue: 0.82,
+            duration: settleDuration,
+            easing: Easing.out(Easing.quad),
+            useNativeDriver: false,
+          }),
+        ]),
+        Animated.parallel([
+          Animated.timing(haloScale, {
+            toValue: 0.94,
+            duration: exhaleDuration,
+            easing: exhaleEase,
+            useNativeDriver: true,
+          }),
+          Animated.timing(ringScale, {
+            toValue: 0.965,
+            duration: exhaleDuration,
+            easing: exhaleEase,
+            useNativeDriver: true,
+          }),
+          Animated.timing(coreScale, {
+            toValue: 0.94,
+            duration: exhaleDuration,
+            easing: exhaleEase,
+            useNativeDriver: true,
+          }),
+          Animated.timing(haloOpacity, {
+            toValue: 0.14,
+            duration: exhaleDuration,
+            easing: exhaleEase,
+            useNativeDriver: false,
+          }),
+          Animated.timing(ringOpacity, {
+            toValue: 0.46,
+            duration: exhaleDuration,
+            easing: exhaleEase,
+            useNativeDriver: false,
+          }),
+          Animated.timing(captionOpacity, {
+            toValue: 0.62,
+            duration: exhaleDuration,
+            easing: exhaleEase,
             useNativeDriver: false,
           }),
         ]),
@@ -114,17 +151,20 @@ export function BreathPacer({ running }: BreathPacerProps) {
     );
 
     cycle.start();
-    return () => cycle.stop();
-  }, [captionOpacity, coreScale, glowOpacity, haloScale, orbScale, ringScale, running]);
+
+    return () => {
+      cycle.stop();
+    };
+  }, [captionOpacity, coreScale, haloOpacity, haloScale, ringOpacity, ringScale, running]);
 
   return (
     <View style={styles.wrap}>
-      <Animated.View style={[styles.halo, { opacity: glowOpacity, transform: [{ scale: haloScale }] }]} />
-      <Animated.View style={[styles.ring, { transform: [{ scale: ringScale }] }]} />
-      <Animated.View style={[styles.orb, { transform: [{ scale: orbScale }] }]}> 
+      <Animated.View style={[styles.fieldGlow, { opacity: haloOpacity, transform: [{ scale: haloScale }] }]} />
+      <Animated.View style={[styles.halo, { opacity: ringOpacity, transform: [{ scale: ringScale }] }]} />
+      <Animated.View style={[styles.orbShell, { transform: [{ scale: ringScale }] }]}>
         <Animated.View style={[styles.core, { transform: [{ scale: coreScale }] }]} />
       </Animated.View>
-      <Animated.Text style={[styles.caption, { opacity: captionOpacity }]}>IN · OUT · SETTLE</Animated.Text>
+      <Animated.Text style={[styles.caption, { opacity: captionOpacity }]}>In · Settle · Out</Animated.Text>
     </View>
   );
 }
@@ -133,53 +173,48 @@ const styles = StyleSheet.create({
   wrap: {
     alignItems: 'center',
     justifyContent: 'center',
-    height: 336,
+    height: 340,
+    width: '100%',
+  },
+  fieldGlow: {
+    position: 'absolute',
+    width: 320,
+    height: 320,
+    borderRadius: 999,
+    backgroundColor: theme.colors.accentGlow,
   },
   halo: {
     position: 'absolute',
-    width: 268,
-    height: 268,
-    borderRadius: 999,
-    backgroundColor: theme.colors.accentGlowStrong,
-  },
-  ring: {
-    position: 'absolute',
-    width: 212,
-    height: 212,
+    width: 232,
+    height: 232,
     borderRadius: 999,
     borderWidth: 1,
-    borderColor: 'rgba(146, 168, 255, 0.24)',
-    backgroundColor: 'rgba(10, 16, 24, 0.36)',
+    borderColor: '#32466e',
+    backgroundColor: 'rgba(10, 18, 34, 0.34)',
   },
-  orb: {
-    width: 162,
-    height: 162,
+  orbShell: {
+    width: 168,
+    height: 168,
     borderRadius: 999,
-    backgroundColor: '#0e1828',
     alignItems: 'center',
     justifyContent: 'center',
-    borderWidth: 1,
-    borderColor: 'rgba(146, 168, 255, 0.18)',
-    shadowColor: theme.colors.shadow,
-    shadowOpacity: 0.22,
-    shadowRadius: 30,
-    shadowOffset: { width: 0, height: 12 },
+    backgroundColor: 'rgba(14, 22, 40, 0.28)',
   },
   core: {
-    width: 100,
-    height: 100,
+    width: 112,
+    height: 112,
     borderRadius: 999,
-    backgroundColor: theme.colors.accent,
-    shadowColor: theme.colors.shadow,
-    shadowOpacity: 0.18,
-    shadowRadius: 18,
-    shadowOffset: { width: 0, height: 8 },
+    backgroundColor: '#a4b5ff',
+    shadowColor: '#a4b5ff',
+    shadowOpacity: 0.12,
+    shadowRadius: 16,
+    shadowOffset: { width: 0, height: 0 },
   },
   caption: {
     marginTop: 26,
-    color: theme.colors.textSoft,
+    color: theme.colors.textMuted,
     fontSize: 13,
-    letterSpacing: 2.4,
+    letterSpacing: 1.1,
     textTransform: 'uppercase',
   },
 });
