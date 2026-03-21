@@ -23,6 +23,7 @@ export function SessionView({ mode, durationSeconds, onExit, onContinue }: Sessi
 
   useEffect(() => {
     start();
+    // start should run once on mount for a fresh session
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -33,16 +34,16 @@ export function SessionView({ mode, durationSeconds, onExit, onContinue }: Sessi
   return (
     <Screen>
       <View style={styles.headerBlock}>
-        <Text style={styles.eyebrow}>{mode.toUpperCase()}</Text>
+        <Text style={styles.eyebrow}>{mode}</Text>
         <Text style={styles.title}>{modeConfig.sessionPrompt}</Text>
         <Text style={styles.text}>Quiet breath. Quiet return.</Text>
       </View>
 
-      <View style={styles.instrumentField}>
-        <View style={styles.timerRow}>
-          <Text style={styles.timer}>{formatSessionLength(remainingSeconds)}</Text>
+      <View style={styles.instrumentPanel}>
+        <Text style={styles.timer}>{formatSessionLength(remainingSeconds)}</Text>
+        <View style={styles.fieldWrap}>
+          <BreathPacer running={running} />
         </View>
-        <BreathPacer running={running} />
         <Text style={styles.line}>{completed ? modeConfig.completionLine : 'Let the breath organize the signal.'}</Text>
       </View>
 
@@ -61,53 +62,53 @@ export function SessionView({ mode, durationSeconds, onExit, onContinue }: Sessi
 const styles = StyleSheet.create({
   headerBlock: {
     gap: 8,
+    marginBottom: theme.spacing.lg,
   },
   eyebrow: {
-    color: theme.colors.success,
+    color: theme.colors.positive,
     fontSize: 13,
-    letterSpacing: 2,
+    letterSpacing: 1.1,
     textTransform: 'uppercase',
     fontWeight: '700',
   },
   title: {
-    color: theme.colors.text,
-    fontSize: 34,
-    lineHeight: 40,
+    color: theme.colors.textPrimary,
+    fontSize: 32,
+    lineHeight: 38,
     fontWeight: '700',
     maxWidth: 320,
   },
   text: {
-    color: theme.colors.textMuted,
-    fontSize: 17,
-    lineHeight: 26,
+    color: theme.colors.textSecondary,
+    fontSize: 16,
+    lineHeight: 24,
     maxWidth: 300,
   },
-  instrumentField: {
+  instrumentPanel: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
     paddingVertical: theme.spacing.xl,
-    paddingHorizontal: theme.spacing.md,
-    marginBottom: theme.spacing.sm,
-    position: 'relative',
-  },
-  timerRow: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    minHeight: 22,
+    marginBottom: theme.spacing.lg,
   },
   timer: {
-    color: theme.colors.textSoft,
+    color: theme.colors.textMuted,
     fontSize: 14,
-    letterSpacing: 1.6,
+    letterSpacing: 1,
+    marginBottom: theme.spacing.sm,
+  },
+  fieldWrap: {
+    width: '100%',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: theme.spacing.lg,
   },
   line: {
-    color: theme.colors.textMuted,
-    fontSize: 16,
-    lineHeight: 24,
+    color: theme.colors.textSecondary,
+    fontSize: 15,
+    lineHeight: 22,
     textAlign: 'center',
-    maxWidth: 280,
-    marginTop: -4,
+    maxWidth: 260,
   },
   buttonStack: {
     gap: theme.spacing.sm,
