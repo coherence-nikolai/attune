@@ -1,134 +1,115 @@
-import React, { useMemo } from 'react';
+import React, { useEffect } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
 import { MODE_CONFIG } from '../constants/attune';
 import { useSessionTimer } from '../hooks/useSessionTimer';
 import { theme } from '../theme';
 import { AttuneMode } from '../types';
-import { formatTimer } from '../utils/time';
+import { formatSessionLength } from '../utils/format';
 import { BreathPacer } from './BreathPacer';
 import { PrimaryButton } from './PrimaryButton';
-import { SecondaryButton } from './SecondaryButton';
 import { Screen } from './Screen';
+import { SecondaryButton } from './SecondaryButton';
 
 type SessionViewProps = {
   mode: AttuneMode;
+  durationSeconds: number;
   onExit: () => void;
   onContinue: () => void;
-  durationSeconds: number;
 };
 
-export function SessionView({ mode, onExit, onContinue, durationSeconds }: SessionViewProps) {
-  const config = MODE_CONFIG[mode];
-  const { remainingSeconds, status, pause, resume, exit } = useSessionTimer({
-    durationSeconds,
-    onComplete: () => undefined,
-  });
+export function SessionView({ mode, durationSeconds, onExit, onContinue }: SessionViewProps) {
+  const { remainingSeconds, status, start, pause, resume } = useSessionTimer(durationSeconds);
 
-  const breathLabel = useMemo(() => {
-    if (status === 'completed') {
-      return 'Settle';
-    }
+  useEffect(() => {
+    start();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
-    if (status === 'paused') {
-      return 'Paused';
-    }
-
-    const cycleMs = config.inhaleMs + config.exhaleMs + config.settleMs;
-    const elapsedMs = (durationSeconds - remainingSeconds) * 1000;
-    const position = ((elapsedMs % cycleMs) + cycleMs) % cycleMs;
-
-    if (position < config.inhaleMs) {
-      return 'In';
-    }
-
-    if (position < config.inhaleMs + config.exhaleMs) {
-      return 'Out';
-    }
-
-    return 'Settle';
-  }, [config.exhaleMs, config.inhaleMs, config.settleMs, durationSeconds, remainingSeconds, status]);
-
-  const handleExit = () => {
-    exit();
-    onExit();
-  };
+  const modeConfig = MODE_CONFIG[mode];
+  const running = status === 'running';
+  const completed = status === 'completed';
 
   return (
-    <Screen scroll={false}>
-      <View style={styles.header}>
-        <Text style={styles.eyebrow}>{mode}</Text>
-        <Text style={styles.title}>{config.description}</Text>
-        <Text style={styles.subtitle}>Stay with the breath.</Text>
+    <Screen>
+      <View style={styles.headerBlock}>
+        <Text style={styles.eyebrow}>{mode.toUpperCase()}</Text>
+        <Text style={styles.title}>{modeConfig.sessionPrompt}</Text>
+        <Text style={styles.text}>Quiet breath. Quiet return.</Text>
       </View>
 
-      <View style={styles.sessionCard}>
-        <BreathPacer
-          inhaleMs={config.inhaleMs}
-          exhaleMs={config.exhaleMs}
-          settleMs={config.settleMs}
-          paused={status === 'paused'}
-          completed={status === 'completed'}
-          label={breathLabel}
-        />
+      <View style={styles.instrumentField}>
+        <View style={styles.timerRow}>
+          <Text style={styles.timer}>{formatSessionLength(remainingSeconds)}</Text>
+        </View>
+        <BreathPacer running={running} />
+        <Text style={styles.line}>{completed ? modeConfig.completionLine : 'Let the breath organize the signal.'}</Text>
+      </View>
 
-        <Text style={styles.timer}>{formatTimer(remainingSeconds)}</Text>
-
-        {status === 'completed' ? (
-          <PrimaryButton label="Continue" onPress={onContinue} />
+      <View style={styles.buttonStack}>
+        {!completed ? (
+          <PrimaryButton label={running ? 'Pause' : 'Resume'} onPress={running ? pause : resume} />
         ) : (
-          <View style={styles.actions}>
-            {status === 'paused' ? (
-              <PrimaryButton label="Resume" onPress={resume} />
-            ) : (
-              <PrimaryButton label="Pause" onPress={pause} />
-            )}
-            <SecondaryButton label="Exit" onPress={handleExit} tone="danger" />
-          </View>
+          <PrimaryButton label="Continue" onPress={onContinue} />
         )}
+        <SecondaryButton label="Exit" onPress={onExit} />
       </View>
     </Screen>
   );
 }
 
 const styles = StyleSheet.create({
-  header: {
-    gap: theme.spacing.sm,
-    marginTop: theme.spacing.sm,
+  headerBlock: {
+    gap: 8,
   },
   eyebrow: {
     color: theme.colors.success,
-    fontSize: theme.typography.small,
+    fontSize: 13,
+    letterSpacing: 2,
+    textTransform: 'uppercase',
     fontWeight: '700',
-    letterSpacing: 0.3,
   },
   title: {
     color: theme.colors.text,
-    fontSize: theme.typography.title,
+    fontSize: 34,
     lineHeight: 40,
     fontWeight: '700',
+    maxWidth: 320,
   },
-  subtitle: {
+  text: {
     color: theme.colors.textMuted,
-    fontSize: theme.typography.body,
+    fontSize: 17,
+    lineHeight: 26,
+    maxWidth: 300,
   },
-  sessionCard: {
+  instrumentField: {
     flex: 1,
-    borderRadius: theme.radius.lg,
-    borderWidth: 1,
-    borderColor: theme.colors.border,
-    backgroundColor: theme.colors.surface,
-    padding: theme.spacing.lg,
-    justifyContent: 'space-between',
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: theme.spacing.xl,
+    paddingHorizontal: theme.spacing.md,
+    marginBottom: theme.spacing.sm,
+    position: 'relative',
+  },
+  timerRow: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    minHeight: 22,
   },
   timer: {
-    textAlign: 'center',
-    color: theme.colors.textMuted,
-    fontSize: theme.typography.section,
-    fontWeight: '600',
-    marginBottom: theme.spacing.lg,
+    color: theme.colors.textSoft,
+    fontSize: 14,
+    letterSpacing: 1.6,
   },
-  actions: {
+  line: {
+    color: theme.colors.textMuted,
+    fontSize: 16,
+    lineHeight: 24,
+    textAlign: 'center',
+    maxWidth: 280,
+    marginTop: -4,
+  },
+  buttonStack: {
     gap: theme.spacing.sm,
   },
 });

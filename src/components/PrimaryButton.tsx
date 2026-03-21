@@ -9,39 +9,48 @@ type PrimaryButtonProps = {
   disabled?: boolean;
 };
 
-export function PrimaryButton({ label, onPress, disabled = false }: PrimaryButtonProps) {
+export function PrimaryButton({ label, onPress, disabled }: PrimaryButtonProps) {
   return (
     <Pressable
       accessibilityRole="button"
-      accessibilityState={{ disabled }}
-      disabled={disabled}
       onPress={onPress}
-      style={({ pressed }) => [styles.button, pressed && !disabled ? styles.pressed : null, disabled ? styles.disabled : null]}
+      disabled={disabled}
+      style={({ pressed }) => [styles.button, disabled && styles.buttonDisabled, pressed && !disabled && styles.buttonPressed]}
     >
-      <Text style={styles.label}>{label}</Text>
+      <Text style={[styles.label, disabled && styles.labelDisabled]}>{label}</Text>
     </Pressable>
   );
 }
 
 const styles = StyleSheet.create({
   button: {
-    minHeight: 56,
+    minHeight: 62,
     borderRadius: theme.radius.pill,
     backgroundColor: theme.colors.accent,
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: theme.spacing.lg,
+    shadowColor: theme.colors.shadow,
+    shadowOpacity: 0.16,
+    shadowRadius: 20,
+    shadowOffset: { width: 0, height: 12 },
   },
-  pressed: {
-    opacity: 0.9,
+  buttonPressed: {
+    opacity: 0.94,
     transform: [{ scale: 0.995 }],
   },
-  disabled: {
-    opacity: 0.45,
+  buttonDisabled: {
+    backgroundColor: theme.colors.surfaceElevated,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+    shadowOpacity: 0,
   },
   label: {
-    color: '#0A1020',
-    fontSize: theme.typography.body,
+    color: '#11131a',
+    fontSize: 18,
     fontWeight: '700',
+  },
+  labelDisabled: {
+    color: theme.colors.textSoft,
   },
 });

@@ -1,11 +1,10 @@
 import React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
-import { AttuneMode } from '../types';
 import { theme } from '../theme';
 
 type ModeCardProps = {
-  title: AttuneMode;
+  title: string;
   cue: string;
   description: string;
   selected: boolean;
@@ -14,16 +13,15 @@ type ModeCardProps = {
 
 export function ModeCard({ title, cue, description, selected, onPress }: ModeCardProps) {
   return (
-    <Pressable
-      accessibilityRole="button"
-      accessibilityState={{ selected }}
-      onPress={onPress}
-      style={({ pressed }) => [styles.card, selected ? styles.selected : null, pressed ? styles.pressed : null]}
-    >
-      <View style={styles.header}>
+    <Pressable onPress={onPress} style={({ pressed }) => [styles.card, selected && styles.cardSelected, pressed && styles.cardPressed]}>
+      <View style={[styles.glow, selected && styles.glowSelected]} />
+      <View style={styles.row}>
         <Text style={styles.title}>{title}</Text>
-        <Text style={styles.cue}>{cue}</Text>
+        <View style={[styles.dotRing, selected && styles.dotRingSelected]}>
+          <View style={[styles.dotInner, selected && styles.dotInnerSelected]} />
+        </View>
       </View>
+      <Text style={styles.cue}>{cue}</Text>
       <Text style={styles.description}>{description}</Text>
     </Pressable>
   );
@@ -31,40 +29,82 @@ export function ModeCard({ title, cue, description, selected, onPress }: ModeCar
 
 const styles = StyleSheet.create({
   card: {
+    overflow: 'hidden',
     borderRadius: theme.radius.lg,
     borderWidth: 1,
-    borderColor: theme.colors.border,
+    borderColor: theme.colors.borderSoft,
     backgroundColor: theme.colors.surface,
     padding: theme.spacing.lg,
-    gap: theme.spacing.sm,
+    gap: 8,
   },
-  selected: {
-    borderColor: theme.colors.accentGlow,
-    backgroundColor: theme.colors.surfaceElevated,
-    shadowColor: theme.colors.accentGlow,
-    shadowOpacity: 0.12,
-    shadowRadius: 18,
+  cardSelected: {
+    borderColor: 'rgba(146, 168, 255, 0.28)',
+    backgroundColor: theme.colors.surfaceRaised,
+    shadowColor: theme.colors.shadow,
+    shadowOpacity: 0.16,
+    shadowRadius: 20,
     shadowOffset: { width: 0, height: 10 },
   },
-  pressed: {
-    opacity: 0.92,
+  cardPressed: {
+    opacity: 0.96,
   },
-  header: {
-    gap: 4,
+  glow: {
+    position: 'absolute',
+    top: -22,
+    left: 26,
+    width: 120,
+    height: 120,
+    borderRadius: 999,
+    backgroundColor: 'transparent',
+  },
+  glowSelected: {
+    backgroundColor: theme.colors.selectionGlow,
+  },
+  row: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
   },
   title: {
     color: theme.colors.text,
-    fontSize: theme.typography.section,
+    fontSize: 20,
     fontWeight: '700',
   },
   cue: {
     color: theme.colors.success,
-    fontSize: theme.typography.small,
+    fontSize: 14,
     fontWeight: '600',
   },
   description: {
     color: theme.colors.textMuted,
-    fontSize: theme.typography.body,
+    fontSize: 15,
     lineHeight: 22,
+  },
+  dotRing: {
+    width: 22,
+    height: 22,
+    borderRadius: 999,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: theme.colors.backgroundSoft,
+  },
+  dotRingSelected: {
+    borderColor: 'rgba(146, 168, 255, 0.4)',
+    backgroundColor: 'rgba(146, 168, 255, 0.08)',
+  },
+  dotInner: {
+    width: 8,
+    height: 8,
+    borderRadius: 999,
+    backgroundColor: 'transparent',
+  },
+  dotInnerSelected: {
+    backgroundColor: theme.colors.accentSoft,
+    shadowColor: theme.colors.shadow,
+    shadowOpacity: 0.24,
+    shadowRadius: 12,
+    shadowOffset: { width: 0, height: 2 },
   },
 });

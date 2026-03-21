@@ -1,33 +1,25 @@
-import React, { PropsWithChildren } from 'react';
-import { KeyboardAvoidingView, Platform, SafeAreaView, ScrollView, StyleSheet, View } from 'react-native';
+import React from 'react';
+import { SafeAreaView, ScrollView, StyleSheet, View, ViewProps } from 'react-native';
 
 import { theme } from '../theme';
 
-type ScreenProps = PropsWithChildren<{
+type ScreenProps = ViewProps & {
+  children: React.ReactNode;
   scroll?: boolean;
-}>
+};
 
-export function Screen({ children, scroll = true }: ScreenProps) {
-  const content = (
-    <View style={styles.content}>
-      {children}
-    </View>
-  );
-
+export function Screen({ children, style, scroll = true, ...rest }: ScreenProps) {
   return (
     <SafeAreaView style={styles.safeArea}>
-      <KeyboardAvoidingView
-        behavior={Platform.select({ ios: 'padding', default: undefined })}
-        style={styles.flex}
-      >
-        {scroll ? (
-          <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-            {content}
-          </ScrollView>
-        ) : (
-          content
-        )}
-      </KeyboardAvoidingView>
+      {scroll ? (
+        <ScrollView contentContainerStyle={[styles.content, style]} keyboardShouldPersistTaps="handled" {...rest}>
+          {children}
+        </ScrollView>
+      ) : (
+        <View style={[styles.content, style]} {...rest}>
+          {children}
+        </View>
+      )}
     </SafeAreaView>
   );
 }
@@ -37,18 +29,12 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: theme.colors.background,
   },
-  flex: {
-    flex: 1,
-  },
-  scrollContent: {
-    flexGrow: 1,
-  },
   content: {
-    flex: 1,
+    flexGrow: 1,
     paddingHorizontal: theme.spacing.lg,
-    paddingTop: theme.spacing.lg,
-    paddingBottom: theme.spacing.xl,
-    gap: theme.spacing.lg,
+    paddingTop: theme.spacing.xl,
+    paddingBottom: theme.spacing.xxl,
     backgroundColor: theme.colors.background,
+    gap: theme.spacing.xl,
   },
 });
