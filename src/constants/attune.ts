@@ -13,9 +13,9 @@ export const ATTUNE_STATES: AttuneState[] = [
 export const SESSION_DURATION_SECONDS = 180;
 
 export const BREATH_PHASES = {
-  inhaleSeconds: 4,
-  exhaleSeconds: 6,
-  settleSeconds: 1,
+  inhaleSeconds: 3.6,
+  exhaleSeconds: 4.8,
+  settleSeconds: 0.9,
 } as const;
 
 export const MODE_ORDER: AttuneMode[] = ['Steady', 'Soften', 'Clear'];
